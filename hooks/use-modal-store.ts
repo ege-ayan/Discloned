@@ -1,5 +1,5 @@
 import { Server } from "@prisma/client";
-import { set } from "react-hook-form";
+
 import { create } from "zustand";
 
 export type ModalType = "createServer" | "invite";
