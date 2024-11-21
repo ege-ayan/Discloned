@@ -7,10 +7,11 @@ export async function PATCH(
   {
     params,
   }: {
-    params: { serverId: string };
+    params: Promise<{ serverId: string }>;
   }
 ) {
   try {
+    const serverId = (await params).serverId;
     const profile = await currentProfile();
     const { name, imageUrl } = await req.json();
     if (!profile) {
@@ -19,7 +20,7 @@ export async function PATCH(
 
     const server = await db.server.update({
       where: {
-        id: params.serverId,
+        id: serverId,
         profileId: profile.id,
       },
       data: {
