@@ -13,12 +13,32 @@ import { useModal } from "@/hooks/use-modal-store";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Check, Copy, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  Check,
+  Copy,
+  MoreVertical,
+  RefreshCw,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldQuestion,
+} from "lucide-react";
 
 import axios from "axios";
 import { ServerWithMembersWithProfiles } from "@/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/user-avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuTrigger,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const roleIconMap = {
   GUEST: null,
@@ -57,7 +77,41 @@ export const MembersModal = () => {
                 <p className="text-xs text-zinc-500">{member.profile.email}</p>
               </div>
               {server.profileId !== member.profileId &&
-                loadingId !== member.profileId && <div>Actions</div>}
+                loadingId !== member.id && (
+                  <div className="ml-auto">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger>
+                        <MoreVertical className="size-4 text-zinc-500" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent side="left">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="flex items-center">
+                            <ShieldQuestion className="size-4 mr-2" />{" "}
+                            <span>Role</span>
+                          </DropdownMenuSubTrigger>
+                          <DropdownMenuPortal>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuItem>
+                                <Shield className="mr-2 size-4" />
+                                Guest
+                                {member.role === "GUEST" && (
+                                  <Check className="size-4 ml-auto" />
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <ShieldCheck className="mr-2 size-4" />
+                                Moderator
+                                {member.role === "MODERATOR" && (
+                                  <Check className="size-4 ml-auto" />
+                                )}
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuPortal>
+                        </DropdownMenuSub>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
             </div>
           ))}
         </ScrollArea>
