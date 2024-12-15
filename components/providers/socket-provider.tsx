@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 type SocketContextType = {
@@ -17,24 +17,21 @@ export const useSocket = () => useContext(SocketContext);
 
 let socketInstance: Socket | null = null;
 
-const getSocketInstance = (): Socket => {
-  if (!socketInstance) {
-    console.log("🔌 Creating a new socket connection...");
-    socketInstance = io(process.env.NEXT_PUBLIC_SITE_URL!, {
-      path: "/api/socket/io",
-      reconnection: true,
-      addTrailingSlash: false,
-    });
-  }
-  return socketInstance;
-};
-
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socket = getSocketInstance();
+    if (!socketInstance) {
+      console.log("Creating a new socket connection...");
+      socketInstance = io(process.env.NEXT_PUBLIC_SITE_URL!, {
+        path: "/api/socket/io",
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+      });
+    } else {
+      console.log("Reusing existing socket connection...");
+    }
 
     const handleConnect = () => {
       console.log("✅ Socket connected");
@@ -46,20 +43,20 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       setIsConnected(false);
     };
 
-    socket.on("connect", handleConnect);
-    socket.on("disconnect", handleDisconnect);
-
-    setSocket(socket);
+    if (!socketInstance.hasListeners("connect")) {
+      socketInstance.on("connect", handleConnect);
+      socketInstance.on("disconnect", handleDisconnect);
+    }
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("disconnect", handleDisconnect);
-      console.log("🧹 Cleaned up listeners");
+      console.log("Cleaning up listeners...");
+      socketInstance?.off("connect", handleConnect);
+      socketInstance?.off("disconnect", handleDisconnect);
     };
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket: socketInstance, isConnected }}>
       {children}
     </SocketContext.Provider>
   );
