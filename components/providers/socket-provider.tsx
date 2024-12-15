@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { io as ClientIO } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 type SocketContextType = {
-  socket: any | null;
+  socket: Socket | null;
   isConnected: boolean;
 };
 
@@ -13,32 +13,48 @@ const SocketContext = createContext<SocketContextType>({
   isConnected: false,
 });
 
-export const useSocket = () => {
-  return useContext(SocketContext);
+export const useSocket = () => useContext(SocketContext);
+
+let socketInstance: Socket | null = null;
+
+const getSocketInstance = (): Socket => {
+  if (!socketInstance) {
+    console.log("🔌 Creating a new socket connection...");
+    socketInstance = io(process.env.NEXT_PUBLIC_SITE_URL!, {
+      path: "/api/socket/io",
+      reconnection: true,
+      addTrailingSlash: false,
+    });
+  }
+  return socketInstance;
 };
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const [socket, setSocket] = useState(null);
-  const [isConnected, setIsconnected] = useState(false);
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = new (ClientIO as any)(
-      process.env.NEXT_PUBLIC_SITE_URL!,
-      { path: "/api/socket/io", addTrailingSlash: false }
-    );
+    const socket = getSocketInstance();
 
-    socketInstance.on("connect", () => {
-      setIsconnected(true);
-    });
+    const handleConnect = () => {
+      console.log("✅ Socket connected");
+      setIsConnected(true);
+    };
 
-    socketInstance.on("disconect", () => {
-      setIsconnected(false);
-    });
+    const handleDisconnect = () => {
+      console.log("❌ Socket disconnected");
+      setIsConnected(false);
+    };
 
-    setSocket(socketInstance);
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
+    setSocket(socket);
 
     return () => {
-      socketInstance.disconnect();
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      console.log("🧹 Cleaned up listeners");
     };
   }, []);
 
