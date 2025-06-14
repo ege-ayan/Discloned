@@ -2,8 +2,6 @@
 
 A full-stack, real-time clone of Discord built with modern web technologies. This application replicates core Discord features including servers, channels (text, voice, video), direct messaging, member roles, and file attachments.
 
-**[Link to Live Demo]** (Add your deployment link here)
-
 ## ✨ Features
 
 - **Server Management**: Create and manage servers, generate invite links.
@@ -78,11 +76,9 @@ Follow these instructions to set up the project locally for development and test
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/discloned.git
+git clone https://github.com/ege-ayan/Discloned.git
 cd discloned
 ```
-
-_(Replace `<your-username>` with your GitHub username or the appropriate repository URL)_
 
 ### 2. Install Dependencies
 
